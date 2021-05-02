@@ -1,5 +1,6 @@
 package ru.mockingrave.ethereum.javabackend.service;
 
+import io.ipfs.api.IPFS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -31,8 +32,14 @@ public class GethService {
     @Value("${keystore.path}")
     protected String KEY_PATH;
 
+    @Value("${ipfs.port}")
+    protected int IPFS_PORT;
+
     @Autowired
     protected Web3j web3j;
+
+    IPFS ipfs = new IPFS("localhost", IPFS_PORT);
+
 
     public InfoDto connectionTest() {
         var result = new HashMap<String, String>();
