@@ -1,6 +1,8 @@
 package ru.mockingrave.ethereum.javabackend.service;
 
 import io.ipfs.api.IPFS;
+import io.ipfs.api.MerkleNode;
+import io.ipfs.api.NamedStreamable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,7 +25,10 @@ import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -32,8 +37,7 @@ public class GethService {
     @Value("${keystore.path}")
     protected String KEY_PATH;
 
-    @Value("${ipfs.port}")
-    protected int IPFS_PORT;
+    protected int IPFS_PORT = 5001;
 
     @Autowired
     protected Web3j web3j;
@@ -166,7 +170,7 @@ public class GethService {
                     web3j, credentials, Long.parseLong(web3j.netVersion().send().getNetVersion()));
 
 
-                registryContract = DocumentRegistry.deploy(web3j, transactionManager, new StaticGasProvider(bIntGasPrice,bIntGasLimit)).send();
+            registryContract = DocumentRegistry.deploy(web3j, transactionManager, new StaticGasProvider(bIntGasPrice, bIntGasLimit)).send();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -176,6 +180,23 @@ public class GethService {
             result.put("Contract address", registryContract.getContractAddress());
         }
         return new InfoDto(result);
+    }
+
+    public InfoDto testIfs() {
+        try {
+            NamedStreamable.ByteArrayWrapper bytearray =
+                    new NamedStreamable.ByteArrayWrapper(
+                            ("Hello, Bytes! " +
+                                    LocalDateTime.now().format(
+                                            DateTimeFormatter.ofPattern("dd.MM - HH:mm:ss"))
+                            ).getBytes());
+            MerkleNode response = ipfs.add(bytearray).get(0);
+
+            return new InfoDto(Map.of("hash", response.hash.toBase58()));
+
+        } catch (IOException ex) {
+            throw new RuntimeException("Error whilst communicating with the IPFS node", ex);
+        }
     }
 
     private String getBalance(String address) {

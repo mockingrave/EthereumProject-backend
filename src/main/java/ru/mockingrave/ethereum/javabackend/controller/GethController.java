@@ -55,4 +55,9 @@ public class GethController {
         return ResponseEntity.ok()
                 .body(gethService.contractDeploy(dto.getName(), dto.getPassword(), dto.getGasLimit(), dto.getGasPrice()));
     }
-}
+
+    @GetMapping("/testIpfs")
+    public ResponseEntity<InfoDto> checkIpfs() {
+        return ResponseEntity.ok()
+                .body(gethService.testIfs());
+    }}
