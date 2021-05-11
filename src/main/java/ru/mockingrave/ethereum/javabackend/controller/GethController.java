@@ -6,36 +6,35 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.mockingrave.ethereum.javabackend.dto.EthAccountDto;
 import ru.mockingrave.ethereum.javabackend.dto.InfoDto;
 import ru.mockingrave.ethereum.javabackend.dto.TransactionDto;
-import ru.mockingrave.ethereum.javabackend.dto.UserDto;
 import ru.mockingrave.ethereum.javabackend.service.GethService;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/geth")
 public class GethController {
 
     private final GethService gethService;
 
-    @GetMapping("/test")
-    public ResponseEntity<InfoDto> checkConnection(@RequestParam("info") String info) {
+    @GetMapping("/connectionTest")
+    public ResponseEntity<InfoDto> checkConnection() {
         return ResponseEntity.ok()
                 .body(gethService.connectionTest());
     }
 
     @PostMapping("/account")
-    public ResponseEntity<InfoDto> createAccount(@RequestBody UserDto user) {
+    public ResponseEntity<EthAccountDto> createAccount(@RequestBody EthAccountDto account) {
         return ResponseEntity.ok()
-                .body(gethService.createNewAccount(user.getPassword()));
+                .body(gethService.createNewAccount(account.getPassword()));
     }
 
     @PostMapping("/account/check")
-    public ResponseEntity<InfoDto> checkAccount(@RequestBody UserDto user) {
+    public ResponseEntity<EthAccountDto> checkAccount(@RequestBody EthAccountDto account) {
         return ResponseEntity.ok()
-                .body(gethService.checkAccount(user.getName(), user.getPassword()));
+                .body(gethService.checkAccount(account.getWallet(), account.getPassword()));
     }
 
     @PostMapping("/account/transfer")
@@ -56,8 +55,4 @@ public class GethController {
                 .body(gethService.contractDeploy(dto.getName(), dto.getPassword(), dto.getGasLimit(), dto.getGasPrice()));
     }
 
-    @GetMapping("/testIpfs")
-    public ResponseEntity<InfoDto> checkIpfs() {
-        return ResponseEntity.ok()
-                .body(gethService.testIfs());
-    }}
+}
