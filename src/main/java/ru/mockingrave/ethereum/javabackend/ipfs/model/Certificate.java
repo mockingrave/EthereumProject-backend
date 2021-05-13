@@ -1,17 +1,16 @@
-package ru.mockingrave.ethereum.javabackend.dto;
+package ru.mockingrave.ethereum.javabackend.ipfs.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.mockingrave.ethereum.javabackend.dto.substruct.AuthorityDataPack;
 import ru.mockingrave.ethereum.javabackend.dto.substruct.Qualification;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class IpfsCertificateDto {
+public class Certificate implements Serializable {
 
     List<Qualification> qualifications;
 

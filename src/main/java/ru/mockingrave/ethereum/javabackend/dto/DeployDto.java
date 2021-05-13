@@ -1,19 +1,21 @@
 package ru.mockingrave.ethereum.javabackend.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class EthAccountDto {
+public class DeployDto{
 
-    String balance;
+    String companyName;
 
-    String wallet;
+    String departmentName;
 
     String address;
 
+    String walletFrom;
     String password;
+
+    String gasLimit;
+    String gasPrice;
 }

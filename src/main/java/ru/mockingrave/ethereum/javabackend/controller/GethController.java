@@ -7,9 +7,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.mockingrave.ethereum.javabackend.dto.DeployDto;
 import ru.mockingrave.ethereum.javabackend.dto.EthAccountDto;
 import ru.mockingrave.ethereum.javabackend.dto.InfoDto;
 import ru.mockingrave.ethereum.javabackend.dto.TransactionDto;
+import ru.mockingrave.ethereum.javabackend.service.GethContractService;
 import ru.mockingrave.ethereum.javabackend.service.GethService;
 
 @RestController
@@ -18,6 +20,8 @@ import ru.mockingrave.ethereum.javabackend.service.GethService;
 public class GethController {
 
     private final GethService gethService;
+    private final GethContractService deployService;
+
 
     @GetMapping("/connectionTest")
     public ResponseEntity<InfoDto> checkConnection() {
@@ -41,7 +45,7 @@ public class GethController {
     public ResponseEntity<InfoDto> transferMoney(@RequestBody TransactionDto dto) {
         return ResponseEntity.ok()
                 .body(gethService.transferMoney(
-                        dto.getName(),
+                        dto.getWalletFrom(),
                         dto.getPassword(),
                         dto.getAddressTo(),
                         dto.getValue(),
@@ -49,10 +53,14 @@ public class GethController {
                         dto.getGasPrice()));
     }
 
-    @PostMapping("/contract")
-    public ResponseEntity<InfoDto> createContract(@RequestBody TransactionDto dto) {
+    @PostMapping("/contract/deploy")
+    public ResponseEntity<String> deploySystemOfContracts
+            (@RequestBody DeployDto dto) {
+        String response = "Failed. Something is wrong.";
+        if (deployService.createOwnerAndDeploySystem(dto))
+            response = "Successfully. Contract addresses added to application.properties";
         return ResponseEntity.ok()
-                .body(gethService.contractDeploy(dto.getName(), dto.getPassword(), dto.getGasLimit(), dto.getGasPrice()));
+                .body(response);
     }
 
 }

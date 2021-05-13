@@ -1,15 +1,14 @@
-package ru.mockingrave.ethereum.javabackend.dto;
+package ru.mockingrave.ethereum.javabackend.ipfs.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
+
 @Data
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class IpfsAuthorityDto implements Serializable {
+public class Accreditor implements Serializable {
 
     String sourceAccreditorName;
     String sourceAccreditorIpfsHash;

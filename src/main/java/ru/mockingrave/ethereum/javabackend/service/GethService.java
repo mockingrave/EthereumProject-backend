@@ -11,11 +11,9 @@ import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tx.RawTransactionManager;
-import org.web3j.tx.gas.StaticGasProvider;
 import org.web3j.utils.Convert;
 import ru.mockingrave.ethereum.javabackend.dto.EthAccountDto;
 import ru.mockingrave.ethereum.javabackend.dto.InfoDto;
-import ru.mockingrave.ethereum.javabackend.model.DocumentRegistry;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +34,7 @@ public class GethService {
     protected Web3j web3j;
 
     public InfoDto connectionTest() {
+
         var response = new HashMap<String, String>();
         try {
             // web3_clientVersion returns the current client version.
@@ -135,37 +134,12 @@ public class GethService {
         return new InfoDto(response);
     }
 
-    public InfoDto contractDeploy(String walletName, String password, String gasLimit, String gasPrice) {
-        var response = new HashMap<String, String>();
-        DocumentRegistry registryContract = null;
-        BigInteger bIntGasLimit = BigInteger.valueOf(Long.parseLong(gasLimit));
-        BigInteger bIntGasPrice = Convert.toWei(gasPrice, Convert.Unit.ETHER).toBigInteger();
-
-        try {
-            Credentials credentials = WalletUtils.loadCredentials(password, KEY_PATH + walletName);
-
-            var transactionManager = new RawTransactionManager(
-                    web3j, credentials, Long.parseLong(web3j.netVersion().send().getNetVersion()));
-
-
-            registryContract = DocumentRegistry.deploy(web3j, transactionManager, new StaticGasProvider(bIntGasPrice, bIntGasLimit)).send();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (registryContract != null) {
-            response.put("Contract address", registryContract.getContractAddress());
-        }
-        return new InfoDto(response);
-    }
-
     private String getBalance(String address) {
         try {
             return Convert.fromWei
                     (web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST)
                             .send().getBalance().toString(), Convert.Unit.ETHER)
-                    .toString();
+                    .toString()+" Eth";
         } catch (IOException e) {
             e.printStackTrace();
         }

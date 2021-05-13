@@ -1,4 +1,4 @@
-package ru.mockingrave.ethereum.javabackend.dto.auxiliary;
+package ru.mockingrave.ethereum.javabackend.dto.substruct;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
