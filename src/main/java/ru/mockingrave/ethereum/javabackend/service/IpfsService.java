@@ -61,7 +61,7 @@ public class IpfsService {
 
             MerkleNode response = ipfs.add(inputStreamWrapper).get(0);
 
-            return  response.hash.toBase58();
+            return response.hash.toBase58();
 
         } catch (IOException ex) {
             throw new RuntimeException("Error whilst communicating with the IPFS node", ex);
@@ -75,7 +75,7 @@ public class IpfsService {
             var inputStream = ipfs.catStream(multihash);
 
             var objectsIn = new ObjectInputStream(inputStream);
-            var response  = (Serializable) objectsIn.readObject();
+            var response = (Serializable) objectsIn.readObject();
             objectsIn.close();
 
             return response;
@@ -85,7 +85,7 @@ public class IpfsService {
         }
     }
 
-    public Map<Multihash, Object> hostedContent(IPFS.PinType filter){
+    public Map<Multihash, Object> hostedContent(IPFS.PinType filter) {
 
         try {
             return ipfs.pin.ls(filter);

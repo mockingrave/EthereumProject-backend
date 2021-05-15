@@ -11,6 +11,7 @@ import ru.mockingrave.ethereum.javabackend.dto.DeployDto;
 import ru.mockingrave.ethereum.javabackend.dto.EthAccountDto;
 import ru.mockingrave.ethereum.javabackend.dto.InfoDto;
 import ru.mockingrave.ethereum.javabackend.dto.TransactionDto;
+import ru.mockingrave.ethereum.javabackend.dto.substruct.AuthenticationData;
 import ru.mockingrave.ethereum.javabackend.service.GethContractService;
 import ru.mockingrave.ethereum.javabackend.service.GethService;
 
@@ -30,27 +31,27 @@ public class GethController {
     }
 
     @PostMapping("/account")
-    public ResponseEntity<EthAccountDto> createAccount(@RequestBody EthAccountDto account) {
+    public ResponseEntity<EthAccountDto> createAccount(@RequestBody String password) {
         return ResponseEntity.ok()
-                .body(gethService.createNewAccount(account.getPassword()));
+                .body(gethService.createNewAccount(password));
     }
 
     @PostMapping("/account/check")
-    public ResponseEntity<EthAccountDto> checkAccount(@RequestBody EthAccountDto account) {
+    public ResponseEntity<EthAccountDto> checkAccount(@RequestBody AuthenticationData account) {
         return ResponseEntity.ok()
-                .body(gethService.checkAccount(account.getWallet(), account.getPassword()));
+                .body(gethService.checkAccount(account.getWalletName(), account.getPassword()));
     }
 
     @PostMapping("/account/transfer")
     public ResponseEntity<InfoDto> transferMoney(@RequestBody TransactionDto dto) {
         return ResponseEntity.ok()
                 .body(gethService.transferMoney(
-                        dto.getWalletFrom(),
-                        dto.getPassword(),
+                        dto.getAuthenticationData().getWalletName(),
+                        dto.getAuthenticationData().getPassword(),
                         dto.getAddressTo(),
                         dto.getValue(),
-                        dto.getGasLimit(),
-                        dto.getGasPrice()));
+                        dto.getGasData().getGasLimit(),
+                        dto.getGasData().getGasPrice()));
     }
 
     @PostMapping("/contract/deploy")

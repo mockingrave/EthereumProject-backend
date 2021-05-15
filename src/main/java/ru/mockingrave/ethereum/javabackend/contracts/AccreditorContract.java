@@ -20,10 +20,16 @@ import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.BaseEventResponse;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.protocol.exceptions.TransactionException;
 import org.web3j.tx.Contract;
+import org.web3j.tx.RawTransactionManager;
 import org.web3j.tx.TransactionManager;
 import org.web3j.tx.gas.ContractGasProvider;
+import org.web3j.tx.gas.DefaultGasProvider;
+import org.web3j.tx.response.PollingTransactionReceiptProcessor;
+import org.web3j.tx.response.TransactionReceiptProcessor;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -114,6 +120,26 @@ public class AccreditorContract extends Contract {
         super(BINARY, contractAddress, web3j, transactionManager, contractGasProvider);
     }
 
+    protected TransactionReceipt executeRemoteCallTransaction(Function function, Credentials credentials){
+        String txData = FunctionEncoder.encode(function);
+
+        try {
+            TransactionManager txManager =new RawTransactionManager(web3j, credentials, Long.parseLong(web3j.netVersion().send().getNetVersion()));
+            String txHash = txManager.sendTransaction(
+                    DefaultGasProvider.GAS_PRICE,
+                    DefaultGasProvider.GAS_LIMIT,
+                    this.getContractAddress(),
+                    txData, BigInteger.ZERO).getTransactionHash();
+            TransactionReceiptProcessor receiptProcessor =
+                    new PollingTransactionReceiptProcessor(web3j, TransactionManager.DEFAULT_POLLING_FREQUENCY,
+                            TransactionManager.DEFAULT_POLLING_ATTEMPTS_PER_TX_HASH);
+            return receiptProcessor.waitForTransactionReceipt(txHash);
+        } catch (IOException | TransactionException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public RemoteFunctionCall<List> getAllCertifiers() {
         final Function function = new Function(FUNC_GETALLCERTIFIERS, 
                 Arrays.<Type>asList(), 
@@ -129,12 +155,24 @@ public class AccreditorContract extends Contract {
                 });
     }
 
-    public RemoteFunctionCall<TransactionReceipt> createAccreditor(String sourceIpfsHash, String newAccreditor, String newIpfsHash) {
+    public TransactionReceipt createAccreditor
+            (String sourceIpfsHash, String newAccreditor, String newIpfsHash, Credentials credentials) {
         final Function function = new Function(
                 FUNC_CREATEACCREDITOR, 
                 Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(sourceIpfsHash), 
                 new org.web3j.abi.datatypes.Address(160, newAccreditor), 
                 new org.web3j.abi.datatypes.Utf8String(newIpfsHash)), 
+                Collections.<TypeReference<?>>emptyList());
+
+        return executeRemoteCallTransaction(function, credentials);
+    }
+
+    public RemoteFunctionCall<TransactionReceipt> createAccreditor(String sourceIpfsHash, String newAccreditor, String newIpfsHash) {
+        final Function function = new Function(
+                FUNC_CREATEACCREDITOR,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(sourceIpfsHash),
+                        new org.web3j.abi.datatypes.Address(160, newAccreditor),
+                        new org.web3j.abi.datatypes.Utf8String(newIpfsHash)),
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
@@ -147,6 +185,17 @@ public class AccreditorContract extends Contract {
                 new org.web3j.abi.datatypes.Utf8String(newIpfsHash)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
+    }
+
+    public TransactionReceipt updateAccreditor
+            (String sourceIpfsHash, String oldIpfsHash, String newIpfsHash, Credentials credentials) {
+        final Function function = new Function(
+                FUNC_UPDATEACCREDITOR,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(sourceIpfsHash),
+                        new org.web3j.abi.datatypes.Utf8String(oldIpfsHash),
+                        new org.web3j.abi.datatypes.Utf8String(newIpfsHash)),
+                Collections.<TypeReference<?>>emptyList());
+        return executeRemoteCallTransaction(function, credentials);
     }
 
     public RemoteFunctionCall<String> getCertifierSource(String ipfsHash) {
@@ -186,6 +235,16 @@ public class AccreditorContract extends Contract {
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
+    public TransactionReceipt createCertifier
+            (String sourceIpfsHash, String newCertifier, String newIpfsHash, Credentials credentials) {
+        final Function function = new Function(
+                FUNC_CREATECERTIFIER,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(sourceIpfsHash),
+                        new org.web3j.abi.datatypes.Address(160, newCertifier),
+                        new org.web3j.abi.datatypes.Utf8String(newIpfsHash)),
+                Collections.<TypeReference<?>>emptyList());
+        return executeRemoteCallTransaction(function, credentials);
+    }
 
     public RemoteFunctionCall<List> getAllAccreditors() {
         final Function function = new Function(FUNC_GETALLACCREDITORS, 
@@ -217,6 +276,15 @@ public class AccreditorContract extends Contract {
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
+    public TransactionReceipt deleteCertifier
+            (String sourceIpfsHash, String deleteIpfsHash, Credentials credentials) {
+        final Function function = new Function(
+                FUNC_DELETECERTIFIER,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(sourceIpfsHash),
+                        new org.web3j.abi.datatypes.Utf8String(deleteIpfsHash)),
+                Collections.<TypeReference<?>>emptyList());
+        return executeRemoteCallTransaction(function, credentials);
+    }
 
     public RemoteFunctionCall<TransactionReceipt> updateCertifier(String sourceIpfsHash, String oldIpfsHash, String newIpfsHash) {
         final Function function = new Function(
@@ -226,6 +294,16 @@ public class AccreditorContract extends Contract {
                 new org.web3j.abi.datatypes.Utf8String(newIpfsHash)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
+    }
+    public TransactionReceipt updateCertifier
+            (String sourceIpfsHash, String oldIpfsHash, String newIpfsHash, Credentials credentials) {
+        final Function function = new Function(
+                FUNC_UPDATECERTIFIER,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(sourceIpfsHash),
+                        new org.web3j.abi.datatypes.Utf8String(oldIpfsHash),
+                        new org.web3j.abi.datatypes.Utf8String(newIpfsHash)),
+                Collections.<TypeReference<?>>emptyList());
+        return executeRemoteCallTransaction(function, credentials);
     }
 
     public RemoteFunctionCall<String> getCertifierAddress(String ipfsHash) {
@@ -242,6 +320,15 @@ public class AccreditorContract extends Contract {
                 new org.web3j.abi.datatypes.Utf8String(deleteIpfsHash)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
+    }
+
+    public TransactionReceipt deleteAccreditor(String sourceIpfsHash, String deleteIpfsHash, Credentials credentials) {
+        final Function function = new Function(
+                FUNC_DELETEACCREDITOR,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(sourceIpfsHash),
+                        new org.web3j.abi.datatypes.Utf8String(deleteIpfsHash)),
+                Collections.<TypeReference<?>>emptyList());
+        return executeRemoteCallTransaction(function, credentials);
     }
 
     public List<LogCreateAccreditorEventResponse> getLogCreateAccreditorEvents(TransactionReceipt transactionReceipt) {
@@ -549,4 +636,6 @@ public class AccreditorContract extends Contract {
 
         public String deleteIpfsHash;
     }
+
+
 }

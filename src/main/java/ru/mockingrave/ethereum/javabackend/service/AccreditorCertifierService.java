@@ -1,30 +1,21 @@
 package ru.mockingrave.ethereum.javabackend.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.web3j.crypto.CipherException;
 import org.web3j.crypto.WalletUtils;
 import ru.mockingrave.ethereum.javabackend.dto.EthAuthorityDto;
 import ru.mockingrave.ethereum.javabackend.dto.IpfsAuthorityDto;
 import ru.mockingrave.ethereum.javabackend.dto.substruct.AuthenticationData;
 
-import java.io.IOException;
-
 @Service
-public class AccreditorService extends GethService {
+public class AccreditorCertifierService extends AccreditorService {
 
     @Value("${account.viewing.wallet}")
     protected String ACC_WALL;
     @Value("${account.viewing.password}")
     protected String ACC_PASS;
 
-    @Autowired
-    GethContractService gethContractService;
-    @Autowired
-    IpfsService ipfsService;
-
-    public EthAuthorityDto createAccreditor(IpfsAuthorityDto newDto, String walletName, String password) {
+    public EthAuthorityDto createCertifier(IpfsAuthorityDto newDto, String walletName, String password) {
 
         var sourceHash = newDto.getSourceAccreditorIpfsHash();
 
@@ -45,15 +36,15 @@ public class AccreditorService extends GethService {
         //save in Ethereum
         try {
             var credentials = WalletUtils.loadCredentials(password, KEY_PATH + walletName);
-            accreditorContract.createAccreditor(sourceHash, newDto.getEthAddress(), newIpfsHash, credentials);
+            accreditorContract.createCertifier(sourceHash, newDto.getEthAddress(), newIpfsHash, credentials);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return getEthAccreditor(newIpfsHash);
+        return getEthCertifier(newIpfsHash);
     }
 
-    public EthAuthorityDto updateAccreditor(String oldHash, IpfsAuthorityDto newData, String walletName, String password) {
+    public EthAuthorityDto updateCertifier(String oldHash, IpfsAuthorityDto newData, String walletName, String password) {
 
         var accreditorContract = gethContractService.accreditorContractLoad(walletName, password);
 
@@ -75,75 +66,55 @@ public class AccreditorService extends GethService {
 
         try {
             var credentials = WalletUtils.loadCredentials(password, KEY_PATH + walletName);
-            accreditorContract.updateAccreditor(newData.getSourceAccreditorIpfsHash(), oldHash, newIpfsHash, credentials);
+            accreditorContract.updateCertifier(newData.getSourceAccreditorIpfsHash(), oldHash, newIpfsHash, credentials);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return getEthAccreditor(newIpfsHash);
+        return getEthCertifier(newIpfsHash);
     }
 
-    public boolean deleteAccreditor(String deleteIpfsHash, String sourceIpfsHash, String walletName, String password) {
+    public boolean deleteCertifier(String deleteIpfsHash, String sourceIpfsHash, String walletName, String password) {
 
         var accreditorContract = gethContractService.accreditorContractLoad(walletName, password);
 
         try {
             var credentials = WalletUtils.loadCredentials(password, KEY_PATH + walletName);
-            accreditorContract.deleteAccreditor(sourceIpfsHash, deleteIpfsHash, credentials);
+            accreditorContract.deleteCertifier(sourceIpfsHash, deleteIpfsHash, credentials);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return !checkEthAccreditor(deleteIpfsHash);
+        return !checkEthCertifier(deleteIpfsHash);
     }
 
-    public IpfsAuthorityDto getIpfsAccreditor(String ipfsHash) {
+    public IpfsAuthorityDto getIpfsCertifier(String ipfsHash) {
 
         return (IpfsAuthorityDto) ipfsService.serializableFromIpfs(ipfsHash);
-
     }
 
-    public EthAuthorityDto getEthAccreditor(String ipfsHash) {
+    public EthAuthorityDto getEthCertifier(String ipfsHash) {
 
         var accreditorContract = gethContractService.accreditorContractLoad(ACC_WALL, ACC_PASS);
         var response = new EthAuthorityDto();
         try {
             response.setIpfsHash(ipfsHash);
-            response.setEthAddress(accreditorContract.getAccreditorAddress(ipfsHash).send());
-            response.setSourceAccreditorIpfsHash(accreditorContract.getAccreditorSource(ipfsHash).send());
+            response.setEthAddress(accreditorContract.getCertifierAddress(ipfsHash).send());
+            response.setSourceAccreditorIpfsHash(accreditorContract.getCertifierSource(ipfsHash).send());
         } catch (Exception e) {
             e.printStackTrace();
         }
         return response;
     }
 
-    public boolean checkEthAccreditor(String ipfsHash) {
+    public boolean checkEthCertifier(String ipfsHash) {
 
         var accreditorContract = gethContractService.accreditorContractLoad(ACC_WALL, ACC_PASS);
         try {
-            return accreditorContract.checkAccreditor(ipfsHash).send();
+            return accreditorContract.checkCertifier(ipfsHash).send();
         } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
     }
-
-    public boolean isRealHash(String ipfsHash, AuthenticationData a) {
-        try {
-            var credentials = WalletUtils.loadCredentials(a.getPassword(), KEY_PATH + a.getWalletName());
-            var sourceAccreditorData = getIpfsAccreditor(ipfsHash);
-            return credentials.getAddress() == sourceAccreditorData.getEthAddress();
-
-        } catch (IOException | CipherException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean isRealHash(String ipfsHash, String ethAddress) {
-        var sourceAccreditorData = getIpfsAccreditor(ipfsHash);
-        return ethAddress == sourceAccreditorData.getEthAddress();
-    }
-
-
 }

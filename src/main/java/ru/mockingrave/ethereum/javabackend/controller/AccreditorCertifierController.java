@@ -1,7 +1,6 @@
 package ru.mockingrave.ethereum.javabackend.controller;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,59 +12,58 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.mockingrave.ethereum.javabackend.dto.EthAuthorityDto;
 import ru.mockingrave.ethereum.javabackend.dto.IpfsAuthorityDto;
-import ru.mockingrave.ethereum.javabackend.service.AccreditorService;
+import ru.mockingrave.ethereum.javabackend.service.AccreditorCertifierService;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/accreditor")
-public class AccreditorController {
+@RequestMapping("/api/accreditor/certifier")
+public class AccreditorCertifierController {
 
-    @Autowired
-    private final AccreditorService accreditorService;
+    private final AccreditorCertifierService acService;
 
     @GetMapping("/{ipfsHash}")
-    public ResponseEntity<IpfsAuthorityDto> getAccreditor(@PathVariable String ipfsHash) {
+    public ResponseEntity<IpfsAuthorityDto> getCertifier(@PathVariable String ipfsHash) {
         return ResponseEntity.ok()
-                .body(accreditorService.getIpfsAccreditor(ipfsHash));
+                .body(acService.getIpfsCertifier(ipfsHash));
     }
 
     @GetMapping("/eth/{ipfsHash}")
-    public ResponseEntity<EthAuthorityDto> getEthAccreditor(
+    public ResponseEntity<EthAuthorityDto> getEthCertifier(
             @PathVariable String ipfsHash) {
 
         return ResponseEntity.ok()
-                .body(accreditorService.getEthAccreditor(ipfsHash));
+                .body(acService.getEthCertifier(ipfsHash));
     }
 
     @PostMapping("/check/{ipfsHash}")
-    public ResponseEntity<String> checkAccreditor
+    public ResponseEntity<String> checkCertifier
             (@PathVariable String ipfsHash) {
-        String response = "The Accreditor does not exist.";
-        if (accreditorService.checkEthAccreditor(ipfsHash))
-            response = "The Accreditor is valid.";
+        String response = "The Certifier does not exist.";
+        if (acService.checkEthCertifier(ipfsHash))
+            response = "The Certifier is valid.";
         return ResponseEntity.ok()
                 .body(response);
     }
 
     @PostMapping
-    public ResponseEntity<EthAuthorityDto> createAccreditor
+    public ResponseEntity<EthAuthorityDto> createCertifier
             (@RequestBody IpfsAuthorityDto dto, String walletName, String password) {
         return ResponseEntity.ok()
-                .body(accreditorService.createAccreditor(dto, walletName, password));
+                .body(acService.createCertifier(dto, walletName, password));
     }
 
     @PutMapping("/{ipfsHash}")
-    public ResponseEntity<EthAuthorityDto> updateAccreditor
+    public ResponseEntity<EthAuthorityDto> updateCertifier
             (@PathVariable String ipfsHash, @RequestBody IpfsAuthorityDto dto, String walletName, String password) {
         return ResponseEntity.ok()
-                .body(accreditorService.updateAccreditor(ipfsHash, dto, walletName, password));
+                .body(acService.updateCertifier(ipfsHash, dto, walletName, password));
     }
 
     @DeleteMapping("/{ipfsHash}")
-    public ResponseEntity<String> deleteAccreditor
+    public ResponseEntity<String> deleteCertifier
             (@PathVariable String ipfsHash, @RequestBody String sourceIpfsHash, String walletName, String password) {
         String response = "Failed";
-        if (accreditorService.deleteAccreditor(ipfsHash, sourceIpfsHash, walletName, password))
+        if (acService.deleteCertifier(ipfsHash, sourceIpfsHash, walletName, password))
             response = "Success";
         return ResponseEntity.ok()
                 .body(response);

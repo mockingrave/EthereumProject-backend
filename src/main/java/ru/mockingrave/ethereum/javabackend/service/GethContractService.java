@@ -13,6 +13,7 @@ import org.web3j.utils.Convert;
 import ru.mockingrave.ethereum.javabackend.contracts.AccreditorContract;
 import ru.mockingrave.ethereum.javabackend.contracts.CertifierContract;
 import ru.mockingrave.ethereum.javabackend.dto.DeployDto;
+import ru.mockingrave.ethereum.javabackend.dto.EthAccountDto;
 import ru.mockingrave.ethereum.javabackend.dto.IpfsAuthorityDto;
 
 import java.io.FileInputStream;
@@ -26,29 +27,26 @@ import java.util.Properties;
 @Service
 public class GethContractService extends GethService {
 
-    @Autowired
-    private IpfsService ipfsService;
-
     @Value("${contract.accreditor}")
     public String ACCREDITOR_CONTRACT_ADDRESS;
-
     @Value("${contract.certifier}")
     public String CERTIFIER_CONTRACT_ADDRESS;
-
+    @Autowired
+    private IpfsService ipfsService;
     private String PROPERTIES_PATH = "src/main/resources/";
 
-    public boolean createOwnerAndDeploySystem (DeployDto dto){
+    public boolean createOwnerAndDeploySystem(DeployDto dto) {
 
-        if (!ACCREDITOR_CONTRACT_ADDRESS.isEmpty()||!CERTIFIER_CONTRACT_ADDRESS.isEmpty()) return false;
+        if (!ACCREDITOR_CONTRACT_ADDRESS.isEmpty() || !CERTIFIER_CONTRACT_ADDRESS.isEmpty()) return false;
 
-        String source = KEY_PATH + dto.getWalletFrom();
+        String sourceName = KEY_PATH + dto.getAuthenticationData().getWalletName();
         Credentials credentials = null;
         try {
-            credentials = WalletUtils.loadCredentials(dto.getPassword(), source);
+            credentials = WalletUtils.loadCredentials(dto.getAuthenticationData().getPassword(), sourceName);
         } catch (IOException | CipherException e) {
             e.printStackTrace();
         }
-        if(credentials==null)return false;
+        if (credentials == null) return false;
 
         var authorityDto = new IpfsAuthorityDto();
 
@@ -58,15 +56,21 @@ public class GethContractService extends GethService {
         authorityDto.setEthAddress(credentials.getAddress());
 
         authorityDto.setSourceAccreditorEthAddress(credentials.getAddress());
-        authorityDto.setSourceAccreditorName("(ROOT OWNER) "+dto.getCompanyName());
+        authorityDto.setSourceAccreditorName("(ROOT OWNER) " + dto.getCompanyName());
         authorityDto.setSourceAccreditorIpfsHash("(ROOT OWNER)");
 
         authorityDto.setActivationDate(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
 
         var ipfsHash = ipfsService.serializableToIpfs(authorityDto);
 
-        certifierContractDeploy(ipfsHash, dto.getWalletFrom(), dto.getPassword(), dto.getGasLimit(),  dto.getGasPrice());
+        certifierContractDeploy(
+                ipfsHash,
+                dto.getAuthenticationData().getWalletName(),
+                dto.getAuthenticationData().getPassword(),
+                dto.getGasData().getGasLimit(),
+                dto.getGasData().getGasPrice());
 
+        createLocalViewingAccount("password");
         return true;
     }
 
@@ -93,7 +97,7 @@ public class GethContractService extends GethService {
 
         if (registryContract != null) {
             var address = registryContract.getContractAddress();
-            saveInProperties("contract.certifier",address);
+            saveInProperties("contract.certifier", address);
             return address;
         }
         return null;
@@ -121,6 +125,9 @@ public class GethContractService extends GethService {
                 saveInProperties("contract.accreditor.owner.ipfs", ownerIpfsHash);
                 saveInProperties("contract.accreditor.owner.address", credentials.getAddress());
 
+                if (!registryContract.checkAccreditor(ownerIpfsHash).send()) address = null;
+                var a = registryContract.getAccreditorAddress(ownerIpfsHash).send();
+                var b = registryContract.getAccreditorSource(ownerIpfsHash).send();
                 return address;
             }
 
@@ -134,8 +141,11 @@ public class GethContractService extends GethService {
 
     private void saveInProperties(String key, String value) {
 
-        var fileName= "application.properties";
+        var fileName = "application.properties";
         var p = new Properties();
+
+        if(value==null) value="";
+
         try {
             var is = new FileInputStream(PROPERTIES_PATH + fileName);
             p.load(is);
@@ -150,18 +160,15 @@ public class GethContractService extends GethService {
         }
     }
 
-    public AccreditorContract accreditorContractLoad(String walletName, String password){
-        String source = KEY_PATH + walletName;
-        Credentials credentials = null;
-        try {
-             credentials = WalletUtils.loadCredentials(password, source);
-        } catch (IOException | CipherException e) {
-            e.printStackTrace();
-        }
-        return AccreditorContract.load(ACCREDITOR_CONTRACT_ADDRESS,web3j, credentials, new DefaultGasProvider());
+    public EthAccountDto createLocalViewingAccount(String password){
+        var account = createNewAccount(password);
+        saveInProperties("account.viewing.address", account.getAddress());
+        saveInProperties("account.viewing.wallet", account.getAuthenticationData().getWalletName());
+        saveInProperties("account.viewing.password", password);
+        return account;
     }
 
-    public CertifierContract certifierContractLoad(String walletName, String password){
+    public AccreditorContract accreditorContractLoad(String walletName, String password) {
         String source = KEY_PATH + walletName;
         Credentials credentials = null;
         try {
@@ -169,8 +176,18 @@ public class GethContractService extends GethService {
         } catch (IOException | CipherException e) {
             e.printStackTrace();
         }
-        return CertifierContract.load(ACCREDITOR_CONTRACT_ADDRESS,web3j, credentials, new DefaultGasProvider());
+        return AccreditorContract.load(ACCREDITOR_CONTRACT_ADDRESS, web3j, credentials, new DefaultGasProvider());
     }
 
+    public CertifierContract certifierContractLoad(String walletName, String password) {
+        String source = KEY_PATH + walletName;
+        Credentials credentials = null;
+        try {
+            credentials = WalletUtils.loadCredentials(password, source);
+        } catch (IOException | CipherException e) {
+            e.printStackTrace();
+        }
+        return CertifierContract.load(ACCREDITOR_CONTRACT_ADDRESS, web3j, credentials, new DefaultGasProvider());
+    }
 
 }

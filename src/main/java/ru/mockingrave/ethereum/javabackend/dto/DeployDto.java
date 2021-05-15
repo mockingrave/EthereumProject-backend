@@ -1,21 +1,44 @@
 package ru.mockingrave.ethereum.javabackend.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import ru.mockingrave.ethereum.javabackend.dto.substruct.AuthenticationData;
+import ru.mockingrave.ethereum.javabackend.dto.substruct.GasData;
 
 @Data
-@NoArgsConstructor
 public class DeployDto{
 
+    @ApiModelProperty(name = "Имя компании")
     String companyName;
 
+    @ApiModelProperty(name = "Название подразделения")
     String departmentName;
 
+    @ApiModelProperty(name = "Физический адрес подразделения")
     String address;
 
-    String walletFrom;
-    String password;
+    GasData gasData;
 
-    String gasLimit;
-    String gasPrice;
+    AuthenticationData authenticationData;
+
+    public DeployDto(){
+        authenticationData = new AuthenticationData();
+        gasData = new GasData();
+    }
+
+    public void setWallet(String walletName) {
+        this.authenticationData.setWalletName(walletName);
+    }
+
+    public void setPassword(String password) {
+        this.authenticationData.setPassword(password);
+    }
+
+    public void setGasLimit(String gasLimit) {
+        this.getGasData().setGasLimit(gasLimit);
+    }
+
+    public void setGasPrice(String gasPrice) {
+        this.getGasData().setGasPrice(gasPrice);
+    }
 }

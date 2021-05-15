@@ -139,7 +139,7 @@ public class GethService {
             return Convert.fromWei
                     (web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST)
                             .send().getBalance().toString(), Convert.Unit.ETHER)
-                    .toString()+" Eth";
+                    .toString() + " Eth";
         } catch (IOException e) {
             e.printStackTrace();
         }
