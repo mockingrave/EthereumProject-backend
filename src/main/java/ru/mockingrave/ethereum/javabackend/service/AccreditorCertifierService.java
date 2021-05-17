@@ -7,6 +7,9 @@ import ru.mockingrave.ethereum.javabackend.dto.EthAuthorityDto;
 import ru.mockingrave.ethereum.javabackend.dto.IpfsAuthorityDto;
 import ru.mockingrave.ethereum.javabackend.dto.substruct.AuthenticationData;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @Service
 public class AccreditorCertifierService extends AccreditorService {
 
@@ -29,6 +32,7 @@ public class AccreditorCertifierService extends AccreditorService {
 
         newDto.setSourceAccreditorEthAddress(sourceAccreditorDto.getEthAddress());
         newDto.setSourceAccreditorName(sourceAccreditorDto.getCompanyName());
+        newDto.setActivationDate(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
 
         //save in IPFS
         var newIpfsHash = ipfsService.serializableToIpfs(newDto);

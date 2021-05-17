@@ -21,27 +21,25 @@ import ru.mockingrave.ethereum.javabackend.service.AccreditorService;
 public class AccreditorController {
 
     @Autowired
-    private final AccreditorService accreditorService;
+    private final AccreditorService aService;
 
     @GetMapping("/{ipfsHash}")
     public ResponseEntity<IpfsAuthorityDto> getAccreditor(@PathVariable String ipfsHash) {
         return ResponseEntity.ok()
-                .body(accreditorService.getIpfsAccreditor(ipfsHash));
+                .body(aService.getIpfsAccreditor(ipfsHash));
     }
 
     @GetMapping("/eth/{ipfsHash}")
-    public ResponseEntity<EthAuthorityDto> getEthAccreditor(
-            @PathVariable String ipfsHash) {
+    public ResponseEntity<EthAuthorityDto> getEthAccreditor(@PathVariable String ipfsHash) {
 
         return ResponseEntity.ok()
-                .body(accreditorService.getEthAccreditor(ipfsHash));
+                .body(aService.getEthAccreditor(ipfsHash));
     }
 
-    @PostMapping("/check/{ipfsHash}")
-    public ResponseEntity<String> checkAccreditor
-            (@PathVariable String ipfsHash) {
+    @GetMapping("/check/{ipfsHash}")
+    public ResponseEntity<String> checkAccreditor(@PathVariable String ipfsHash) {
         String response = "The Accreditor does not exist.";
-        if (accreditorService.checkEthAccreditor(ipfsHash))
+        if (aService.checkEthAccreditor(ipfsHash))
             response = "The Accreditor is valid.";
         return ResponseEntity.ok()
                 .body(response);
@@ -51,21 +49,21 @@ public class AccreditorController {
     public ResponseEntity<EthAuthorityDto> createAccreditor
             (@RequestBody IpfsAuthorityDto dto, String walletName, String password) {
         return ResponseEntity.ok()
-                .body(accreditorService.createAccreditor(dto, walletName, password));
+                .body(aService.createAccreditor(dto, walletName, password));
     }
 
-    @PutMapping("/{ipfsHash}")
+    @PutMapping("/{oldIpfsHash}")
     public ResponseEntity<EthAuthorityDto> updateAccreditor
-            (@PathVariable String ipfsHash, @RequestBody IpfsAuthorityDto dto, String walletName, String password) {
+            (@PathVariable String oldIpfsHash, @RequestBody IpfsAuthorityDto dto, String walletName, String password) {
         return ResponseEntity.ok()
-                .body(accreditorService.updateAccreditor(ipfsHash, dto, walletName, password));
+                .body(aService.updateAccreditor(oldIpfsHash, dto, walletName, password));
     }
 
-    @DeleteMapping("/{ipfsHash}")
+    @DeleteMapping("/{deleteIpfsHash}")
     public ResponseEntity<String> deleteAccreditor
-            (@PathVariable String ipfsHash, @RequestBody String sourceIpfsHash, String walletName, String password) {
+            (@PathVariable String deleteIpfsHash, @RequestBody String sourceIpfsHash, String walletName, String password) {
         String response = "Failed";
-        if (accreditorService.deleteAccreditor(ipfsHash, sourceIpfsHash, walletName, password))
+        if (aService.deleteAccreditor(deleteIpfsHash, sourceIpfsHash, walletName, password))
             response = "Success";
         return ResponseEntity.ok()
                 .body(response);

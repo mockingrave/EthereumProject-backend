@@ -2,6 +2,7 @@ package ru.mockingrave.ethereum.javabackend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.WalletUtils;
@@ -10,8 +11,11 @@ import ru.mockingrave.ethereum.javabackend.dto.IpfsAuthorityDto;
 import ru.mockingrave.ethereum.javabackend.dto.substruct.AuthenticationData;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Service
+@Primary
 public class AccreditorService extends GethService {
 
     @Value("${account.viewing.wallet}")
@@ -38,6 +42,7 @@ public class AccreditorService extends GethService {
 
         newDto.setSourceAccreditorEthAddress(sourceAccreditorDto.getEthAddress());
         newDto.setSourceAccreditorName(sourceAccreditorDto.getCompanyName());
+        newDto.setActivationDate(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
 
         //save in IPFS
         var newIpfsHash = ipfsService.serializableToIpfs(newDto);
@@ -90,6 +95,7 @@ public class AccreditorService extends GethService {
         try {
             var credentials = WalletUtils.loadCredentials(password, KEY_PATH + walletName);
             accreditorContract.deleteAccreditor(sourceIpfsHash, deleteIpfsHash, credentials);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -130,7 +136,9 @@ public class AccreditorService extends GethService {
 
     public boolean isRealHash(String ipfsHash, AuthenticationData a) {
         try {
-            var credentials = WalletUtils.loadCredentials(a.getPassword(), KEY_PATH + a.getWalletName());
+            var password=a.getPassword();
+            if (password == null) password ="";
+            var credentials = WalletUtils.loadCredentials(password, KEY_PATH + a.getWalletName());
             var sourceAccreditorData = getIpfsAccreditor(ipfsHash);
             return credentials.getAddress() == sourceAccreditorData.getEthAddress();
 

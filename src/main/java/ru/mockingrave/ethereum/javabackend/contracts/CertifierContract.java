@@ -18,10 +18,16 @@ import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.BaseEventResponse;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.protocol.exceptions.TransactionException;
 import org.web3j.tx.Contract;
+import org.web3j.tx.RawTransactionManager;
 import org.web3j.tx.TransactionManager;
 import org.web3j.tx.gas.ContractGasProvider;
+import org.web3j.tx.gas.DefaultGasProvider;
+import org.web3j.tx.response.PollingTransactionReceiptProcessor;
+import org.web3j.tx.response.TransactionReceiptProcessor;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,6 +87,26 @@ public class CertifierContract extends Contract {
         super(BINARY, contractAddress, web3j, transactionManager, contractGasProvider);
     }
 
+    protected TransactionReceipt executeRemoteCallTransaction(Function function, Credentials credentials){
+        String txData = FunctionEncoder.encode(function);
+
+        try {
+            TransactionManager txManager =new RawTransactionManager(web3j, credentials, Long.parseLong(web3j.netVersion().send().getNetVersion()));
+            String txHash = txManager.sendTransaction(
+                    BigInteger.valueOf(0),
+                    DefaultGasProvider.GAS_LIMIT,
+                    this.getContractAddress(),
+                    txData, BigInteger.ZERO).getTransactionHash();
+            TransactionReceiptProcessor receiptProcessor =
+                    new PollingTransactionReceiptProcessor(web3j, TransactionManager.DEFAULT_POLLING_FREQUENCY,
+                            TransactionManager.DEFAULT_POLLING_ATTEMPTS_PER_TX_HASH);
+            return receiptProcessor.waitForTransactionReceipt(txHash);
+        } catch (IOException | TransactionException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public RemoteFunctionCall<TransactionReceipt> deleteCertificate(String sourceIpfsHash, String deleteIpfsHash) {
         final Function function = new Function(
                 FUNC_DELETECERTIFICATE, 
@@ -90,6 +116,15 @@ public class CertifierContract extends Contract {
         return executeRemoteCallTransaction(function);
     }
 
+    public TransactionReceipt deleteCertificate(String sourceIpfsHash, String deleteIpfsHash, Credentials credentials) {
+        final Function function = new Function(
+                FUNC_DELETECERTIFICATE,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(sourceIpfsHash),
+                        new org.web3j.abi.datatypes.Utf8String(deleteIpfsHash)),
+                Collections.<TypeReference<?>>emptyList());
+        return executeRemoteCallTransaction(function, credentials);
+    }
+
     public RemoteFunctionCall<TransactionReceipt> updateCertificateSource(String sourceIpfsHash, String certificateIpfsHash) {
         final Function function = new Function(
                 FUNC_UPDATECERTIFICATESOURCE, 
@@ -97,6 +132,15 @@ public class CertifierContract extends Contract {
                 new org.web3j.abi.datatypes.Utf8String(certificateIpfsHash)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
+    }
+
+    public TransactionReceipt updateCertificateSource(String sourceIpfsHash, String certificateIpfsHash, Credentials credentials) {
+        final Function function = new Function(
+                FUNC_UPDATECERTIFICATESOURCE,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(sourceIpfsHash),
+                        new org.web3j.abi.datatypes.Utf8String(certificateIpfsHash)),
+                Collections.<TypeReference<?>>emptyList());
+        return executeRemoteCallTransaction(function, credentials);
     }
 
     public RemoteFunctionCall<String> getCertificate(String ipfsHash) {
@@ -113,6 +157,15 @@ public class CertifierContract extends Contract {
                 new org.web3j.abi.datatypes.Utf8String(newIpfsHash)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
+    }
+
+    public TransactionReceipt createCertificate(String sourceIpfsHash, String newIpfsHash, Credentials credentials) {
+        final Function function = new Function(
+                FUNC_CREATECERTIFICATE,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(sourceIpfsHash),
+                        new org.web3j.abi.datatypes.Utf8String(newIpfsHash)),
+                Collections.<TypeReference<?>>emptyList());
+        return executeRemoteCallTransaction(function, credentials);
     }
 
     public RemoteFunctionCall<Boolean> checkCertificate(String ipfsHash) {

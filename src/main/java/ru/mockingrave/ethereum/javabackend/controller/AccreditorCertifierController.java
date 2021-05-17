@@ -28,16 +28,14 @@ public class AccreditorCertifierController {
     }
 
     @GetMapping("/eth/{ipfsHash}")
-    public ResponseEntity<EthAuthorityDto> getEthCertifier(
-            @PathVariable String ipfsHash) {
+    public ResponseEntity<EthAuthorityDto> getEthCertifier(@PathVariable String ipfsHash) {
 
         return ResponseEntity.ok()
                 .body(acService.getEthCertifier(ipfsHash));
     }
 
-    @PostMapping("/check/{ipfsHash}")
-    public ResponseEntity<String> checkCertifier
-            (@PathVariable String ipfsHash) {
+    @GetMapping("/check/{ipfsHash}")
+    public ResponseEntity<String> checkCertifier(@PathVariable String ipfsHash) {
         String response = "The Certifier does not exist.";
         if (acService.checkEthCertifier(ipfsHash))
             response = "The Certifier is valid.";
@@ -46,24 +44,23 @@ public class AccreditorCertifierController {
     }
 
     @PostMapping
-    public ResponseEntity<EthAuthorityDto> createCertifier
-            (@RequestBody IpfsAuthorityDto dto, String walletName, String password) {
+    public ResponseEntity<EthAuthorityDto> createCertifier(@RequestBody IpfsAuthorityDto dto, String walletName, String password) {
         return ResponseEntity.ok()
                 .body(acService.createCertifier(dto, walletName, password));
     }
 
-    @PutMapping("/{ipfsHash}")
+    @PutMapping("/{oldIpfsHash}")
     public ResponseEntity<EthAuthorityDto> updateCertifier
-            (@PathVariable String ipfsHash, @RequestBody IpfsAuthorityDto dto, String walletName, String password) {
+            (@PathVariable String oldIpfsHash, @RequestBody IpfsAuthorityDto dto, String walletName, String password) {
         return ResponseEntity.ok()
-                .body(acService.updateCertifier(ipfsHash, dto, walletName, password));
+                .body(acService.updateCertifier(oldIpfsHash, dto, walletName, password));
     }
 
-    @DeleteMapping("/{ipfsHash}")
+    @DeleteMapping("/{deleteIpfsHash}")
     public ResponseEntity<String> deleteCertifier
-            (@PathVariable String ipfsHash, @RequestBody String sourceIpfsHash, String walletName, String password) {
+            (@PathVariable String deleteIpfsHash, @RequestBody String sourceIpfsHash, String walletName, String password) {
         String response = "Failed";
-        if (acService.deleteCertifier(ipfsHash, sourceIpfsHash, walletName, password))
+        if (acService.deleteCertifier(deleteIpfsHash, sourceIpfsHash, walletName, password))
             response = "Success";
         return ResponseEntity.ok()
                 .body(response);
