@@ -1,4 +1,4 @@
-package ru.mockingrave.ethereum.javabackend.dto.substruct;
+package ru.mockingrave.ethereum.javabackend.elasticsearch.model.substruct;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;

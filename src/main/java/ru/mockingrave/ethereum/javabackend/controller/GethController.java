@@ -11,7 +11,7 @@ import ru.mockingrave.ethereum.javabackend.dto.DeployDto;
 import ru.mockingrave.ethereum.javabackend.dto.EthAccountDto;
 import ru.mockingrave.ethereum.javabackend.dto.InfoDto;
 import ru.mockingrave.ethereum.javabackend.dto.TransactionDto;
-import ru.mockingrave.ethereum.javabackend.dto.substruct.AuthenticationData;
+import ru.mockingrave.ethereum.javabackend.elasticsearch.model.substruct.AuthenticationData;
 import ru.mockingrave.ethereum.javabackend.service.GethContractService;
 import ru.mockingrave.ethereum.javabackend.service.GethService;
 
@@ -27,7 +27,7 @@ public class GethController {
     @GetMapping("/connectionTest")
     public ResponseEntity<InfoDto> checkConnection() {
         return ResponseEntity.ok()
-                .body(gethService.connectionTest());
+                .body(null);
     }
 
     @PostMapping("/account")

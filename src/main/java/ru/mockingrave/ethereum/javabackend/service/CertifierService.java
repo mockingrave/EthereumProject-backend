@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.WalletUtils;
+import org.web3j.protocol.core.DefaultBlockParameterName;
 import ru.mockingrave.ethereum.javabackend.dto.CertificateDto;
 import ru.mockingrave.ethereum.javabackend.dto.IpfsCertificateDto;
+import ru.mockingrave.ethereum.javabackend.elasticsearch.model.Certificate;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -26,8 +28,12 @@ public class CertifierService extends GethService {
     AccreditorCertifierService acService;
     @Autowired
     AccreditorService aService;
+    @Autowired
+    ElasticsearchService eService;
     
     public CertificateDto createCertificate(IpfsCertificateDto newDto, String walletName, String password) {
+
+        eventsSubscribe(walletName, password);
 
         var sourceHash = newDto.getCertifierIpfsHash();
 
@@ -56,6 +62,8 @@ public class CertifierService extends GethService {
 
     public CertificateDto updateCertificateSource
             (String oldHash, IpfsCertificateDto newData, String walletName, String password) {
+
+        eventsSubscribe(walletName, password);
 
         var certifierContract = gethContractService.certifierContractLoad(walletName, password);
 
@@ -87,6 +95,8 @@ public class CertifierService extends GethService {
 
     public boolean deleteCertificate(String deleteIpfsHash, String sourceIpfsHash, String walletName, String password) {
 
+        eventsSubscribe(walletName, password);
+
         var certifierContract = gethContractService.certifierContractLoad(walletName, password);
 
         try {
@@ -109,6 +119,17 @@ public class CertifierService extends GethService {
 
     }
 
+    public String getEthCertificate(String ipfsHash) {
+
+        var certifierContract = gethContractService.certifierContractLoad(ACC_WALL, ACC_PASS);
+        try {
+            return certifierContract.getCertificate(ipfsHash).send();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public boolean checkCertificate(String ipfsHash) {
 
         var certifierContract = gethContractService.certifierContractLoad(ACC_WALL, ACC_PASS);
@@ -118,6 +139,38 @@ public class CertifierService extends GethService {
             e.printStackTrace();
         }
         return false;
+    }
+
+    private void eventsSubscribe(String walletName, String password){
+
+        var certifierContract = gethContractService.certifierContractLoad(walletName, password);
+
+        certifierContract
+                .logCreateCertificateEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST)
+                .subscribe(event -> {
+                    String ipfsHash = event.ipfsHash;
+                    String certifier = event.sender;
+
+                    eService.addCertificate(new Certificate(getCertificate(ipfsHash)));
+                });
+
+        certifierContract
+                .logUpdateCertificateEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST)
+                .subscribe(event -> {
+                    String ipfsHash = event.ipfsHash;
+                    String certifier = event.sender;
+
+                    eService.updateCertificate(new Certificate(getCertificate(ipfsHash)));
+                });
+
+        certifierContract
+                .logDeleteCertificateEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST)
+                .subscribe(event -> {
+                    String deleteIpfsHash = event.deleteIpfsHash;
+                    String certifier = event.sender;
+
+                    eService.deleteCertificate(deleteIpfsHash);
+                });
     }
 
 }

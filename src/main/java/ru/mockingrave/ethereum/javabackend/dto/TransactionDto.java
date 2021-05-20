@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.mockingrave.ethereum.javabackend.dto.substruct.AuthenticationData;
-import ru.mockingrave.ethereum.javabackend.dto.substruct.GasData;
+import ru.mockingrave.ethereum.javabackend.elasticsearch.model.substruct.AuthenticationData;
+import ru.mockingrave.ethereum.javabackend.elasticsearch.model.substruct.GasData;
 
 @Data
 @AllArgsConstructor

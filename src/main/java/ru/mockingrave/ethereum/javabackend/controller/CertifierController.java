@@ -1,6 +1,7 @@
 package ru.mockingrave.ethereum.javabackend.controller;
 
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ import ru.mockingrave.ethereum.javabackend.service.CertifierService;
 @RequestMapping("/api/certifier")
 public class CertifierController {
 
+    @Autowired
     private final CertifierService cService;
 
     @GetMapping("/{ipfsHash}")

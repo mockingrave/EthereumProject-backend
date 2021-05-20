@@ -2,7 +2,7 @@ package ru.mockingrave.ethereum.javabackend.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
-import ru.mockingrave.ethereum.javabackend.dto.substruct.AuthenticationData;
+import ru.mockingrave.ethereum.javabackend.elasticsearch.model.substruct.AuthenticationData;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)

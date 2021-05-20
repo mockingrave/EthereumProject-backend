@@ -8,7 +8,7 @@ import org.web3j.crypto.CipherException;
 import org.web3j.crypto.WalletUtils;
 import ru.mockingrave.ethereum.javabackend.dto.EthAuthorityDto;
 import ru.mockingrave.ethereum.javabackend.dto.IpfsAuthorityDto;
-import ru.mockingrave.ethereum.javabackend.dto.substruct.AuthenticationData;
+import ru.mockingrave.ethereum.javabackend.elasticsearch.model.substruct.AuthenticationData;
 
 import java.io.IOException;
 import java.time.LocalDate;

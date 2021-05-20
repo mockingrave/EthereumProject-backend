@@ -2,8 +2,8 @@ package ru.mockingrave.ethereum.javabackend.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import ru.mockingrave.ethereum.javabackend.dto.substruct.AuthenticationData;
-import ru.mockingrave.ethereum.javabackend.dto.substruct.GasData;
+import ru.mockingrave.ethereum.javabackend.elasticsearch.model.substruct.AuthenticationData;
+import ru.mockingrave.ethereum.javabackend.elasticsearch.model.substruct.GasData;
 
 @Data
 public class DeployDto{

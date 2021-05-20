@@ -1,4 +1,4 @@
-package ru.mockingrave.ethereum.javabackend.dto.substruct;
+package ru.mockingrave.ethereum.javabackend.elasticsearch.model.substruct;
 
 public enum SkillLevel {
     BASIC,

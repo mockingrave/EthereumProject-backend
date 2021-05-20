@@ -187,7 +187,7 @@ public class GethContractService extends GethService {
         } catch (IOException | CipherException e) {
             e.printStackTrace();
         }
-        return CertifierContract.load(ACCREDITOR_CONTRACT_ADDRESS, web3j, credentials, new DefaultGasProvider());
+        return CertifierContract.load(CERTIFIER_CONTRACT_ADDRESS, web3j, credentials, new DefaultGasProvider());
     }
 
 }

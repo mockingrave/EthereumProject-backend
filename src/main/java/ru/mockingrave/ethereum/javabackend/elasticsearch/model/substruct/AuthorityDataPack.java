@@ -1,4 +1,4 @@
-package ru.mockingrave.ethereum.javabackend.dto.substruct;
+package ru.mockingrave.ethereum.javabackend.elasticsearch.model.substruct;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
