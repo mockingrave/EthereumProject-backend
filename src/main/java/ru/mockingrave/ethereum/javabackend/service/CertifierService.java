@@ -30,13 +30,12 @@ public class CertifierService extends GethService {
     AccreditorService aService;
     @Autowired
     ElasticsearchService eService;
-    
+
     public CertificateDto createCertificate(IpfsCertificateDto newDto, String walletName, String password) {
 
-        eventsSubscribe(walletName, password);
+        //eventsSubscribe();
 
         var sourceHash = newDto.getCertifierIpfsHash();
-
         //load contract
         var certifierContract = gethContractService.certifierContractLoad(walletName, password);
 
@@ -63,7 +62,7 @@ public class CertifierService extends GethService {
     public CertificateDto updateCertificateSource
             (String oldHash, IpfsCertificateDto newData, String walletName, String password) {
 
-        eventsSubscribe(walletName, password);
+        eventsSubscribe();
 
         var certifierContract = gethContractService.certifierContractLoad(walletName, password);
 
@@ -94,8 +93,7 @@ public class CertifierService extends GethService {
     }
 
     public boolean deleteCertificate(String deleteIpfsHash, String sourceIpfsHash, String walletName, String password) {
-
-        eventsSubscribe(walletName, password);
+        eventsSubscribe();
 
         var certifierContract = gethContractService.certifierContractLoad(walletName, password);
 
@@ -141,9 +139,9 @@ public class CertifierService extends GethService {
         return false;
     }
 
-    private void eventsSubscribe(String walletName, String password){
+    private void eventsSubscribe(){
 
-        var certifierContract = gethContractService.certifierContractLoad(walletName, password);
+        var certifierContract = gethContractService.certifierContractLoad(ACC_WALL, ACC_PASS);
 
         certifierContract
                 .logCreateCertificateEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST)
@@ -152,7 +150,7 @@ public class CertifierService extends GethService {
                     String certifier = event.sender;
 
                     eService.addCertificate(new Certificate(getCertificate(ipfsHash)));
-                });
+                }, throwable -> System.out.println("ThrowableThrowableThrowableThrowable " + throwable.getMessage()));
 
         certifierContract
                 .logUpdateCertificateEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST)
@@ -161,7 +159,7 @@ public class CertifierService extends GethService {
                     String certifier = event.sender;
 
                     eService.updateCertificate(new Certificate(getCertificate(ipfsHash)));
-                });
+                }, throwable -> System.out.println("ThrowableThrowableThrowableThrowable " + throwable.getMessage()));
 
         certifierContract
                 .logDeleteCertificateEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST)
@@ -170,7 +168,7 @@ public class CertifierService extends GethService {
                     String certifier = event.sender;
 
                     eService.deleteCertificate(deleteIpfsHash);
-                });
+                }, throwable -> System.out.println("ThrowableThrowableThrowableThrowable " + throwable.getMessage()));
     }
 
 }

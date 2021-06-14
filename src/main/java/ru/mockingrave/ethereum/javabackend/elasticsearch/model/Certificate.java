@@ -21,7 +21,7 @@ public class Certificate {
     @Id
     String ipfsHash;
 
-    @Field(type = FieldType.Nested, includeInParent = true)
+    @Field(type = FieldType.Auto, includeInParent = true)
     List<Qualification> qualifications;
 
     @Field(type = FieldType.Text)
